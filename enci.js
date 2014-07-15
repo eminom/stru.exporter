@@ -8,39 +8,71 @@
 
 var fs = require('fs');
 
-function readIntermediate(){
-	var args = process.argv.splice(2);
-	var buf = fs.readFileSync(args[0]);
+function loadJsonObj(name){
+	var buf = fs.readFileSync(name);
 	var str = new String(buf);
 	var arch = JSON.parse(str);
 	return arch;
 }
 
-function printFields(stru){
+function printFields(stru,conf){
 	for(var i in stru){
 		if('integer' === stru[i]){
-			console.log('_BattleStr(' + i);
+			console.log(conf.GetterIntImpl + '(' + i+')');
 		} else if('string' === stru[i]){
-			console.log('_BattleInt(' + i + ')');
+			console.log(conf.GetterStringImpl + '(' + i + ')');
 		} else {
 			throw "Invalid type for " + stru[i];
 		}
 	}
 }
 
-function printLibs(stru){
-	console.log('static const luaL_reg battleConfigLib[]={');
+function printLibs(stru, conf){
+	console.log('static const luaL_reg '+conf.LibName+'[]={');
 	for(var i in stru){
-		console.log('  _Entry(' + i + ')');
+		console.log('  ' + conf.Entry + '(' + i + ')');
 	}
 	console.log('  {NULL, NULL}');
 	console.log('};');
 }
 
+function testConf(conf){
+	if( !conf.Entry ||
+	    !conf.GetterIntImpl ||
+			!conf.GetterStringImpl ||
+			!conf.LibName){
+			console.error('configure error');
+			process.exit();
+	}
+	try{
+		if(printConf){
+			console.log('-------Configuration-----');
+			for(var i in conf){
+				console.log(i);
+			}
+			console.log('------Configuration Done-----');
+			console.log();
+			console.log();
+		}
+	}catch(err){
+		//console.error(err);
+	}
+}
+
 function main(){
-	var arch = readIntermediate();
-	printFields(arch.struct);
-	printLibs(arch.struct);
+	var conf = loadJsonObj('./conf');
+	testConf(conf);
+	var source = process.argv.splice(2)[0];
+	var arch = loadJsonObj(source);
+
+	console.log('//');
+	console.log('//This code-snippet is generated automatically.');
+	console.log('//Do not modify this manually');
+	console.log('');
+	console.log('');
+	
+	printFields(arch.struct, conf);
+	printLibs(arch.struct, conf);
 }
 
 //Startup
