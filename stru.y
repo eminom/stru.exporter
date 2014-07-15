@@ -29,7 +29,14 @@ int gFieldCounter;
 
 %}
 
-%token S_LBRACKET S_RBRACKET VAR T_STRUCT T_INT T_STRING S_SEMICOLON
+%token DIGITALS
+%token S_LBRACKET S_RBRACKET 
+%token S_SEMICOLON
+%token S_LSQ S_RSQ
+%token VAR 
+%token T_STRUCT T_INT T_STRING 
+%token T_BOOLEAN
+%token T_CCPOINT
 
 %%
 struct:
@@ -56,6 +63,10 @@ T_INT VAR S_SEMICOLON statement
 		gFieldTypes[gFieldCounter] = FT_String;
 		++gFieldCounter;
 	}
+|T_BOOLEAN VAR S_SEMICOLON statement  {}
+|T_CCPOINT VAR S_SEMICOLON statement  {}
+|T_INT VAR S_LSQ DIGITALS S_RSQ S_SEMICOLON statement {}
+|T_INT VAR S_LSQ VAR S_RSQ S_SEMICOLON statement      {}
 |S_RBRACKET			{}
 ;
 %%
@@ -103,15 +114,13 @@ void writeStructFile()
 
 int main(void)
 {
-  yyparse();
-	//printf("Everything turns into dust.\n");
-	//
-	//printf("struct:%s\n", gStructName);
-	//int i=0;
-	//for(i=0;i<gFieldCounter;++i){
-	//	printf("%s:%d\n", gFields[i], gFieldTypes[i]);
-	//}
-	writeStructFile();
+	//yyparse return 0 for valid inputs
+	//non-zero for parsing error
+  if(0==yyparse()){
+		writeStructFile();
+	} else {
+		printf("error parsing\n");
+	}
 	return 0;
 }
 
