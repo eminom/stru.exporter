@@ -1,0 +1,8 @@
+*.c
+*.h
+*.swp
+parser
+input*
+result*
+code_snippet
+
