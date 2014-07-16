@@ -31,6 +31,8 @@ int 												{
 	return T_INT;
 }
 
+float	{ return T_FLOAT;}
+
 CCPoint											{
 	PRT("CCPoint");
 	return T_CCPOINT;

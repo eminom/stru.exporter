@@ -37,6 +37,7 @@ int gFieldCounter;
 %token T_STRUCT T_INT T_STRING 
 %token T_BOOLEAN
 %token T_CCPOINT
+%token T_FLOAT
 
 %%
 struct:
@@ -67,13 +68,23 @@ T_INT VAR S_SEMICOLON statement
 |T_CCPOINT VAR S_SEMICOLON statement  {}
 |T_INT VAR S_LSQ DIGITALS S_RSQ S_SEMICOLON statement {}
 |T_INT VAR S_LSQ VAR S_RSQ S_SEMICOLON statement      {}
+|T_FLOAT VAR S_SEMICOLON statement {
+		PRINT("float %s defined", $2);
+		strcpy(gFields[gFieldCounter], $2);
+		gFieldTypes[gFieldCounter] = FT_Float;
+		++gFieldCounter;
+}
+
+|T_FLOAT VAR S_LSQ VAR S_RSQ S_SEMICOLON statement {}
+|T_FLOAT VAR S_LSQ DIGITALS S_RSQ S_SEMICOLON statement {}
 |S_RBRACKET			{}
 ;
 %%
 
 void yyerror(char *err)
 {
-	printf("error:%s\n",err);
+	//printf("error:%s,  line %d\n",err, yylineno);
+	printf("error:%s\n", err);
 }
 
 
@@ -85,6 +96,9 @@ const char* getTypeStringRep(int type){
 		break;
 	case FT_Integer:
 		rv = "integer";
+		break;
+	case FT_Float:
+		rv = "float";
 		break;
 	default:
 		printf("No no no, invalid type no.\n");
