@@ -1,6 +1,6 @@
 all:
 	yacc -d stru.y
-	lex stru.l
+	lex -l stru.l
 	cc -std=c99 -o parser *.c
 
 test:

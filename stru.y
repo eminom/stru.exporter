@@ -8,6 +8,7 @@
 #define YYSTYPE	char*
 int yylex(void);
 void yyerror(char *);
+extern int yylineno;
 
 //#define PRINT(...)	{printf(__VA_ARGS__);puts("");}
 #define PRINT(...)
@@ -84,7 +85,7 @@ T_INT VAR S_SEMICOLON statement
 void yyerror(char *err)
 {
 	//printf("error:%s,  line %d\n",err, yylineno);
-	printf("error:%s\n", err);
+	printf("error:%s, line %d\n", err, yylineno);
 }
 
 
