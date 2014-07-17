@@ -124,7 +124,7 @@ void writeStructFile()
 
 
 	printf("}");
-	printf("}");
+	printf("}\n\n");
 }
 
 int main(void)
