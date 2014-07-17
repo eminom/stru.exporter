@@ -5,8 +5,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "y.tab.h"
 
+//YYSTYPE must come before y.tab.h
+#define YYSTYPE	char*
+#include "y.tab.h"
 
 int yylex(void);
 
@@ -45,7 +47,8 @@ bool												{
 
 [a-zA-Z][a-zA-Z0-9_]*				{
 	PRT("var");
-	yylval = (int)strdup(yytext);
+	//Do not depend on cast(it may lose precision)
+	yylval = strdup(yytext);
 	return VAR;
 }
 
