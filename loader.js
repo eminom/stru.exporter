@@ -11,7 +11,7 @@ var buffConcat = function(buf0, buf1, size0, size1)
 	return buffer;
 }
 
-function loadFromStream(){
+function _loadFromStream(){
 	var fd = fs.openSync('/dev/stdin', 'rs');
 	var buf = new Buffer(0);
 	var totSize = 0;
@@ -29,4 +29,4 @@ function loadFromStream(){
 	return buf.toString('utf8',0, totSize);
 }
 
-module.exports = loadFromStream;
+module.exports = _loadFromStream;
