@@ -7,6 +7,7 @@
 //And translate struct info into C++ for Lua exporting
 
 var fs = require('fs');
+var loadFromStream = require('./loader');	//
 
 function loadJsonObj(name){
 	var buf = fs.readFileSync(name);
@@ -21,6 +22,8 @@ function printFields(stru,conf){
 			console.log(conf.GetterIntImpl + '(' + i+')');
 		} else if('string' === stru[i]){
 			console.log(conf.GetterStringImpl + '(' + i + ')');
+		} else if('float' === stru[i]){
+			//ignore
 		} else {
 			throw "Invalid type for " + stru[i];
 		}
@@ -59,11 +62,13 @@ function testConf(conf){
 	}
 }
 
+
 function main(){
 	var conf = loadJsonObj('./conf');
 	testConf(conf);
-	var source = process.argv.splice(2)[0];
-	var arch = loadJsonObj(source);
+	//var source = process.argv.splice(2)[0];
+	//var arch = loadJsonObj(source);
+	var arch = JSON.parse(loadFromStream());
 
 	console.log('//');
 	console.log('//This code-snippet is generated automatically.');
