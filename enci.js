@@ -8,13 +8,7 @@
 
 var fs = require('fs');
 var loadFromStream = require('./loader');	//
-
-function loadJsonObj(name){
-	var buf = fs.readFileSync(name);
-	var str = new String(buf);
-	var arch = JSON.parse(str);
-	return arch;
-}
+var loadJsonObj = require('./jloader');
 
 function printFields(stru,conf){
 	for(var i in stru){
