@@ -13,8 +13,7 @@ test:
 
 clean:
 	rm -rf parser
-	rm -rf *.c
-	rm -rf *.h
-	rm -rf *.cc
+	rm -rf *.yy.*
+	rm -rf *.tab.*
 	rm -rf *.o
 	rm -rf result*
