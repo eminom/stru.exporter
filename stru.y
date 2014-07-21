@@ -158,7 +158,7 @@ TInteger			{   gChunk->fieldTypes[gChunk->fieldCounter] = FT_Integer;  gChunk->a
 
 SingleDefine:
 Struct Var Semicolon {
-	strcpy(gChunk->structName, $2);	//Update name
+	//strcpy(gChunk->structName, $2);	//Update name
 }
 |TypeToken VarObj Semicolon		{ 
 	if(gChunk->accepted && !gChunk->isArray){
