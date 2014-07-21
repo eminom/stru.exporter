@@ -25,7 +25,7 @@ enum {
 char gStructName[BUFSIZ];
 char gFields[_MAX_FIELDS][BUFSIZ];
 int gFieldTypes[_MAX_FIELDS];
-int gFieldCounter;
+int gFieldCounter = 0;
 
 void writeStructFile();
 
