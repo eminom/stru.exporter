@@ -24,7 +24,15 @@ enum {
 	FT_Float				//lua_pushnumber (double)
 };
 
-struct StruChunk
+struct StruChunkTag;
+
+typedef struct StruLinkTag
+{
+	struct StruChunkTag *chunk;
+	struct StruLinkTag  *next;
+}StruLink;
+
+typedef struct StruChunkTag
 {
 	char structName[StrSiz];
 	char fields[MaxFields][StrSiz];
@@ -32,20 +40,66 @@ struct StruChunk
 	int fieldCounter;
 	int isArray;
 	int accepted;
-};
+	StruLink *subs;
+}StruChunk;
 
-struct StruChunk* allocStruChunk()
+
+StruChunk* allocStruChunk()
 {
-	struct StruChunk *rv = (struct StruChunk*)malloc(sizeof(struct StruChunk));
+	StruChunk *rv = (StruChunk*)malloc(sizeof(StruChunk));
 	memset(rv, 0, sizeof(*rv));
 	return rv;
 }
 
-struct StruChunk *gChunk;
-struct StruChunk *gStack[StackDepth];
+StruLink* allocStruLink(StruChunk *chunk)
+{
+	StruLink *rv = (StruLink*)malloc(sizeof(StruLink));
+	memset(rv, 0, sizeof(*rv));
+	rv->chunk = chunk;
+	return rv;
+}
+
+//Add to the very end
+void addToTail(StruLink **ppLink, StruChunk *chunk)
+{
+	while(*ppLink)
+	{
+		ppLink = &((*ppLink)->next);
+	}
+
+	StruLink *link = allocStruLink(chunk);
+	*ppLink = link;
+}
+
+StruChunk *gChunk;
+StruChunk *gStack[StackDepth];
 int gTop = -1;
 
-void writeStructFile(struct StruChunk*);
+void pushStruChunk()
+{
+	gTop++;
+	StruChunk *chunk = allocStruChunk();
+	gStack[gTop] = chunk;
+	gChunk = chunk;
+}
+
+void popStruChunk()
+{
+	StruChunk *pre_top = gStack[gTop];
+	gTop--;
+	StruChunk *chunk_now = gStack[gTop];
+	addToTail(&chunk_now->subs, pre_top);
+
+	////***
+	gChunk = chunk_now;
+}
+
+StruChunk* chunkTop()
+{
+	return gStack[gTop];
+}
+
+
 
 %}
 
@@ -78,16 +132,14 @@ Var		{ strcpy(gChunk->structName, $1);}
 
 KeyStruct:
 TStruct { 
-	++gTop;
-	gStack[gTop] = gChunk;
-	gChunk = allocStruChunk(); 
+	pushStruChunk();
 }
 ;
 
 Struct:
 KeyStruct StructName Left DefinesOpt Right
 		{
-			writeStructFile(gChunk);		//Output to stdout
+			popStruChunk();
 		}
 ;
 
@@ -105,7 +157,10 @@ TInteger			{   gChunk->fieldTypes[gChunk->fieldCounter] = FT_Integer;  gChunk->a
 
 
 SingleDefine:
-TypeToken VarObj Semicolon		{ 
+Struct Var Semicolon {
+	strcpy(gChunk->structName, $2);	//Update name
+}
+|TypeToken VarObj Semicolon		{ 
 	if(gChunk->accepted && !gChunk->isArray){
 		gChunk->fieldCounter++;
 	}
@@ -143,11 +198,25 @@ const char* getTypeStringRep(int type){
 }
 
 //Inputs are all global vars
-void writeStructFile(struct StruChunk *now)
+void writeStruct(StruChunk *now, const char *name)
 {
-	printf("{");
-	printf("\"name\":\"%s\", ", now->structName);
-  printf("\"struct\":{");
+  printf("\"%s\":{", name);
+
+	int link_count = 0;
+	StruLink *link = now->subs;
+	while(link)
+	{
+		writeStruct(link->chunk, link->chunk->structName);
+		link = link->next;
+		if(link){
+			printf(",");
+		}
+		link_count++;
+	}
+	if(link_count && now->fieldCounter){
+		printf(",");
+	}
+
 	for(int i=0;i<now->fieldCounter;++i){
 		printf("\"%s\":\"%s\"", now->fields[i], getTypeStringRep(now->fieldTypes[i]));
 		if(i<now->fieldCounter-1){
@@ -156,19 +225,31 @@ void writeStructFile(struct StruChunk *now)
 	}
 
 	printf("}");
-	printf("}\n\n");
 
 	//reset for the next one
 	//fieldCounter = 0;
 }
 
+void writeFromRoot(StruChunk *root)
+{
+	printf("{");
+	writeStruct(root, root->structName);
+	printf("}\n");
+}
+
 int main(void)
 {
+	pushStruChunk();
+	StruChunk *root = chunkTop();
+
 	//yyparse return 0 for valid inputs
 	//non-zero for parsing error
   if(yyparse()){
 		printf("error parsing\n");
+		return -1;
 	}
+
+	writeFromRoot(root);
 	return 0;
 }
 
