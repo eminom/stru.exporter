@@ -13,7 +13,9 @@ extern int yylineno;
 //#define PRINT(...)	{printf(__VA_ARGS__);puts("");}
 #define PRINT(...)
 
-#define _MAX_FIELDS	100
+#define MaxFields			100
+#define StrSiz				80
+#define StackDepth		12
 
 //FieldType 
 enum {
@@ -22,16 +24,28 @@ enum {
 	FT_Float				//lua_pushnumber (double)
 };
 
-char gStructName[BUFSIZ];
-char gFields[_MAX_FIELDS][BUFSIZ];
-int gFieldTypes[_MAX_FIELDS];
-int gFieldCounter = 0;
+struct StruChunk
+{
+	char gStructName[StrSiz];
+	char gFields[MaxFields][StrSiz];
+	int gFieldTypes[MaxFields];
+	int gFieldCounter;
+	int gIsArray;
+	int gAcceptedType;
+};
 
-//Only !gIsArray && gAcceptedType do we move on
-int gIsArray = 0;
-int gAcceptedType = 0;
+struct StruChunk* allocStruChunk()
+{
+	struct StruChunk *rv = (struct StruChunk*)malloc(sizeof(struct StruChunk));
+	memset(rv, 0, sizeof(*rv));
+	return rv;
+}
 
-void writeStructFile();
+struct StruChunk *gChunk;
+struct StruChunk *gStack[StackDepth];
+int gTop = -1;
+
+void writeStructFile(struct StruChunk*);
 
 %}
 
@@ -57,12 +71,23 @@ Struct Semicolon
 |Semicolon
 ;
 
+StructName:
+Var		{ strcpy(gChunk->gStructName, $1);}
+|			{ strcpy(gChunk->gStructName,""); }
+;
+
+KeyStruct:
+TStruct { 
+	++gTop;
+	gStack[gTop] = gChunk;
+	gChunk = allocStruChunk(); 
+}
+;
+
 Struct:
-TStruct Var Left DefinesOpt Right
+KeyStruct StructName Left DefinesOpt Right
 		{
-			PRINT("struct %s defined", $2);
-			strcpy(gStructName, $2);
-			writeStructFile();		//Output to stdout
+			writeStructFile(gChunk);		//Output to stdout
 		}
 ;
 
@@ -72,26 +97,26 @@ SingleDefine DefinesOpt
 ;
 
 TypeToken:
-TInteger			{   gFieldTypes[gFieldCounter] = FT_Integer;  gAcceptedType = 1;}
-|TString			{		gFieldTypes[gFieldCounter] = FT_String;   gAcceptedType = 1;}
-|TBoolean			{   gAcceptedType = 0; }
-|TFloat				{   gAcceptedType = 0; }
-|TCCPoint			{   gAcceptedType = 0; }
+TInteger			{   gChunk->gFieldTypes[gChunk->gFieldCounter] = FT_Integer;  gChunk->gAcceptedType = 1;}
+|TString			{		gChunk->gFieldTypes[gChunk->gFieldCounter] = FT_String;   gChunk->gAcceptedType = 1;}
+|TBoolean			{   gChunk->gAcceptedType = 0; }
+|TFloat				{   gChunk->gAcceptedType = 0; }
+|TCCPoint			{   gChunk->gAcceptedType = 0; }
 
 
 SingleDefine:
 TypeToken VarObj Semicolon		{ 
-	if(gAcceptedType && !gIsArray){
-		gFieldCounter++;
+	if(gChunk->gAcceptedType && !gChunk->gIsArray){
+		gChunk->gFieldCounter++;
 	}
 }
 |Semicolon  {}
 ;
 
 VarObj:
-Var																		{ strcpy(gFields[gFieldCounter], $1); gIsArray = 0;}
-| Var SquaLeft Decimals SquaRight 		{ gIsArray = 1; /*Just ignore array for now  */}
-| Var SquaLeft Var      SquaRight			{ gIsArray = 1; }
+Var																		{ strcpy(gChunk->gFields[gChunk->gFieldCounter], $1); gChunk->gIsArray = 0;}
+| Var SquaLeft Decimals SquaRight 		{ gChunk->gIsArray = 1; /*Just ignore array for now  */}
+| Var SquaLeft Var      SquaRight			{ gChunk->gIsArray = 1; }
 ;
 
 %%
@@ -118,24 +143,23 @@ const char* getTypeStringRep(int type){
 }
 
 //Inputs are all global vars
-void writeStructFile()
+void writeStructFile(struct StruChunk *now)
 {
 	printf("{");
-	printf("\"name\":\"%s\", ", gStructName);
+	printf("\"name\":\"%s\", ", now->gStructName);
   printf("\"struct\":{");
-	for(int i=0;i<gFieldCounter;++i){
-		printf("\"%s\":\"%s\"", gFields[i], getTypeStringRep(gFieldTypes[i]));
-		if(i<gFieldCounter-1){
+	for(int i=0;i<now->gFieldCounter;++i){
+		printf("\"%s\":\"%s\"", now->gFields[i], getTypeStringRep(now->gFieldTypes[i]));
+		if(i<now->gFieldCounter-1){
 			printf(",");
 		}
 	}
-
 
 	printf("}");
 	printf("}\n\n");
 
 	//reset for the next one
-	gFieldCounter = 0;
+	//gFieldCounter = 0;
 }
 
 int main(void)
