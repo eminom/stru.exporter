@@ -14,7 +14,7 @@ struct SomeStruct
 	float f;
 	float f1[BUFSIZ];
 	float f2[BUF10];
-
+	CCPoint pints[BUF100];
 
 	bool booleanValue;
 };
@@ -25,7 +25,7 @@ struct StructEmpty
 
 struct Struct2
 {
-	int age;
+	std::string age;
 };
 
 
