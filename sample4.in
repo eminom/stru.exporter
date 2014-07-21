@@ -1,0 +1,34 @@
+
+;
+;
+;;;
+
+struct SomeStruct
+{
+	int age;
+	std::string gender;
+	CCPoint point;
+	int arr[10];
+	int arr1[BUFSIZ];
+	int arr2[BUF10];
+	float f;
+	float f1[BUFSIZ];
+	float f2[BUF10];
+
+
+	bool booleanValue;
+};
+
+struct StructEmpty
+{
+};
+
+struct Struct2
+{
+	int age;
+};
+
+
+;;
+;
+
