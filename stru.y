@@ -27,6 +27,8 @@ char gFields[_MAX_FIELDS][BUFSIZ];
 int gFieldTypes[_MAX_FIELDS];
 int gFieldCounter;
 
+void writeStructFile();
+
 %}
 
 %token Decimals
@@ -56,6 +58,7 @@ TStruct Var Left StatementsOpt Right
 		{
 			PRINT("struct %s defined", $2);
 			strcpy(gStructName, $2);
+			writeStructFile();		//Output to stdout
 		}
 ;
 
@@ -138,15 +141,16 @@ void writeStructFile()
 
 	printf("}");
 	printf("}\n\n");
+
+	//reset for the next one
+	gFieldCounter = 0;
 }
 
 int main(void)
 {
 	//yyparse return 0 for valid inputs
 	//non-zero for parsing error
-  if(0==yyparse()){
-		writeStructFile();
-	} else {
+  if(yyparse()){
 		printf("error parsing\n");
 	}
 	return 0;
