@@ -2,6 +2,7 @@
 *.tab.*
 *.swp
 *.h
+*.o
 parser
 input*
 result*
