@@ -26,12 +26,12 @@ enum {
 
 struct StruChunk
 {
-	char gStructName[StrSiz];
-	char gFields[MaxFields][StrSiz];
-	int gFieldTypes[MaxFields];
-	int gFieldCounter;
-	int gIsArray;
-	int gAcceptedType;
+	char structName[StrSiz];
+	char fields[MaxFields][StrSiz];
+	int fieldTypes[MaxFields];
+	int fieldCounter;
+	int isArray;
+	int accepted;
 };
 
 struct StruChunk* allocStruChunk()
@@ -72,8 +72,8 @@ Struct Semicolon
 ;
 
 StructName:
-Var		{ strcpy(gChunk->gStructName, $1);}
-|			{ strcpy(gChunk->gStructName,""); }
+Var		{ strcpy(gChunk->structName, $1);}
+|			{ strcpy(gChunk->structName,""); }
 ;
 
 KeyStruct:
@@ -97,26 +97,26 @@ SingleDefine DefinesOpt
 ;
 
 TypeToken:
-TInteger			{   gChunk->gFieldTypes[gChunk->gFieldCounter] = FT_Integer;  gChunk->gAcceptedType = 1;}
-|TString			{		gChunk->gFieldTypes[gChunk->gFieldCounter] = FT_String;   gChunk->gAcceptedType = 1;}
-|TBoolean			{   gChunk->gAcceptedType = 0; }
-|TFloat				{   gChunk->gAcceptedType = 0; }
-|TCCPoint			{   gChunk->gAcceptedType = 0; }
+TInteger			{   gChunk->fieldTypes[gChunk->fieldCounter] = FT_Integer;  gChunk->accepted = 1;}
+|TString			{		gChunk->fieldTypes[gChunk->fieldCounter] = FT_String;   gChunk->accepted = 1;}
+|TBoolean			{   gChunk->accepted = 0; }
+|TFloat				{   gChunk->accepted = 0; }
+|TCCPoint			{   gChunk->accepted = 0; }
 
 
 SingleDefine:
 TypeToken VarObj Semicolon		{ 
-	if(gChunk->gAcceptedType && !gChunk->gIsArray){
-		gChunk->gFieldCounter++;
+	if(gChunk->accepted && !gChunk->isArray){
+		gChunk->fieldCounter++;
 	}
 }
 |Semicolon  {}
 ;
 
 VarObj:
-Var																		{ strcpy(gChunk->gFields[gChunk->gFieldCounter], $1); gChunk->gIsArray = 0;}
-| Var SquaLeft Decimals SquaRight 		{ gChunk->gIsArray = 1; /*Just ignore array for now  */}
-| Var SquaLeft Var      SquaRight			{ gChunk->gIsArray = 1; }
+Var																		{ strcpy(gChunk->fields[gChunk->fieldCounter], $1); gChunk->isArray = 0;}
+| Var SquaLeft Decimals SquaRight 		{ gChunk->isArray = 1; /*Just ignore array for now  */}
+| Var SquaLeft Var      SquaRight			{ gChunk->isArray = 1; }
 ;
 
 %%
@@ -146,11 +146,11 @@ const char* getTypeStringRep(int type){
 void writeStructFile(struct StruChunk *now)
 {
 	printf("{");
-	printf("\"name\":\"%s\", ", now->gStructName);
+	printf("\"name\":\"%s\", ", now->structName);
   printf("\"struct\":{");
-	for(int i=0;i<now->gFieldCounter;++i){
-		printf("\"%s\":\"%s\"", now->gFields[i], getTypeStringRep(now->gFieldTypes[i]));
-		if(i<now->gFieldCounter-1){
+	for(int i=0;i<now->fieldCounter;++i){
+		printf("\"%s\":\"%s\"", now->fields[i], getTypeStringRep(now->fieldTypes[i]));
+		if(i<now->fieldCounter-1){
 			printf(",");
 		}
 	}
@@ -159,7 +159,7 @@ void writeStructFile(struct StruChunk *now)
 	printf("}\n\n");
 
 	//reset for the next one
-	//gFieldCounter = 0;
+	//fieldCounter = 0;
 }
 
 int main(void)
