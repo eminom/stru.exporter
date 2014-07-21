@@ -49,7 +49,6 @@ void writeStructFile();
 
 GeneralStatementsOpt:
 SingleGeneralStatement GeneralStatementsOpt
-|Semicolon
 | 
 ;
 
@@ -85,7 +84,9 @@ TypeToken VarObj Semicolon		{
 	if(gAcceptedType && !gIsArray){
 		gFieldCounter++;
 	}
-};
+}
+|Semicolon  {}
+;
 
 VarObj:
 Var																		{ strcpy(gFields[gFieldCounter], $1); gIsArray = 0;}
