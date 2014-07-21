@@ -21,7 +21,8 @@ extern int yylineno;
 enum {
 	FT_Integer,		//some operand manipulated by APIs such as lua_pushinteger
 	FT_String,			//lua_pushstring   string terminated by zero
-	FT_Float				//lua_pushnumber (double)
+	FT_Float,				//lua_pushnumber (double)
+	FT_Boolean			//lua_pushboolean (true/false)
 };
 
 struct StruChunkTag;
@@ -94,6 +95,19 @@ void popStruChunk()
 	gChunk = chunk_now;
 }
 
+StruChunk* searchLatestChunkFromTop()
+{
+	StruChunk *top = gStack[gTop];
+	StruLink *link = top->subs;
+	StruChunk *rv = top;		//This is weird
+	while(link)
+	{
+		rv = link->chunk;
+		link = link->next;
+	}
+	return rv;
+}
+
 StruChunk* chunkTop()
 {
 	return gStack[gTop];
@@ -158,7 +172,9 @@ TInteger			{   gChunk->fieldTypes[gChunk->fieldCounter] = FT_Integer;  gChunk->a
 
 SingleDefine:
 Struct Var Semicolon {
-	//strcpy(gChunk->structName, $2);	//Update name
+	StruChunk *chunk = searchLatestChunkFromTop();
+	//PRINT("change from %s to %s\n", pChunk->structName, $2);
+	strcpy(chunk->structName, $2);
 }
 |TypeToken VarObj Semicolon		{ 
 	if(gChunk->accepted && !gChunk->isArray){
@@ -189,6 +205,7 @@ const char* getTypeStringRep(int type){
 	case FT_String:		rv = "string";		break;
 	case FT_Integer:	rv = "integer";		break;
 	case FT_Float:		rv = "float"; 		break;
+	case FT_Boolean:	rv = "bool";			break;
 	default:
 	  printf("No no no, invalid type no.\n");
 		abort();
