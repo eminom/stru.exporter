@@ -20,66 +20,66 @@ int yylex(void);
 %%
 struct 	{
 	PRT("struct");
-	return T_STRUCT;
+	return TStruct;
 }
 
 std::string									{
 	PRT("string");
-	return T_STRING;
+	return TString;
 }
 
 int 												{
 	PRT("int");
-	return T_INT;
+	return TInteger;
 }
 
-float	{ return T_FLOAT;}
+float	{ return TFloat;}
 
 CCPoint											{
 	PRT("CCPoint");
-	return T_CCPOINT;
+	return TCCPoint;
 }
 
 bool												{
 	PRT("bool");
-	return T_BOOLEAN;
+	return TBoolean;
 }
 
 [a-zA-Z][a-zA-Z0-9_]*				{
 	PRT("var");
 	//Do not depend on cast(it may lose precision)
 	yylval = strdup(yytext);
-	return VAR;
+	return Var;
 }
 
 [0-9]+											{
 	PRT("decimal");
-	return DIGITALS;
+	return Decimals;
 }
 
 ;														{
 	PRT("semicolon");
-	return S_SEMICOLON;
+	return Semicolon;
 }
 
 \{	   											{
 	PRT("left bracket");
-	return S_LBRACKET;
+	return Left;
 }
 
 \}		  										{
 	PRT("right bracket");
-	return S_RBRACKET;
+	return Right;
 }
 
 \[     {
 	PRT("left square bra");
-	return S_LSQ;
+	return SquaLeft;
 }
 
 \]	{
 	PRT("right square bra");
-	return S_RSQ;
+	return SquaRight;
 }
 
 [ \t\n\r]					          ;	/*remove white space*/

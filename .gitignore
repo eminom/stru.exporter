@@ -1,6 +1,7 @@
 *.yy.*
 *.tab.*
 *.swp
+*.h
 parser
 input*
 result*

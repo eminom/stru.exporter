@@ -18,7 +18,7 @@ extern int yylineno;
 //FieldType 
 enum {
 	FT_Integer,		//some operand manipulated by APIs such as lua_pushinteger
-	FT_String,			//lua_pushstring   string terminated by zero
+	FTString,			//lua_pushstring   string terminated by zero
 	FT_Float				//lua_pushnumber (double)
 };
 
@@ -30,19 +30,19 @@ int gFieldCounter;
 
 %}
 
-%token DIGITALS
-%token S_LBRACKET S_RBRACKET 
-%token S_SEMICOLON
-%token S_LSQ S_RSQ
-%token VAR 
-%token T_STRUCT T_INT T_STRING 
-%token T_BOOLEAN
-%token T_CCPOINT
-%token T_FLOAT
+%token Decimals
+%token Left Right 
+%token Semicolon
+%token SquaLeft SquaRight
+%token Var 
+%token TStruct TInteger TString 
+%token TBoolean
+%token TCCPoint
+%token TFloat
 
 %%
 struct:
-T_STRUCT VAR S_LBRACKET statement S_SEMICOLON  
+TStruct Var Left StatementsOpt Right Semicolon  
 		{
 			PRINT("struct %s defined", $2);
 			strcpy(gStructName, $2);
@@ -50,35 +50,39 @@ T_STRUCT VAR S_LBRACKET statement S_SEMICOLON
 |
 ;
 
-statement:
-T_INT VAR S_SEMICOLON statement					
+StatementsOpt:
+SingleStatement StatementsOpt
+|
+;
+
+SingleStatement:
+TInteger Var Semicolon					
 	{
 		PRINT("int %s defined", $2);
 		strcpy(gFields[gFieldCounter], $2);
 		gFieldTypes[gFieldCounter] = FT_Integer;
 		++gFieldCounter;
 	}
-|T_STRING VAR S_SEMICOLON statement 		
+|TString Var Semicolon
 	{
 		PRINT("std::string %s defined", $2);
 		strcpy(gFields[gFieldCounter], $2);
-		gFieldTypes[gFieldCounter] = FT_String;
+		gFieldTypes[gFieldCounter] = FTString;
 		++gFieldCounter;
 	}
-|T_BOOLEAN VAR S_SEMICOLON statement  {}
-|T_CCPOINT VAR S_SEMICOLON statement  {}
-|T_INT VAR S_LSQ DIGITALS S_RSQ S_SEMICOLON statement {}
-|T_INT VAR S_LSQ VAR S_RSQ S_SEMICOLON statement      {}
-|T_FLOAT VAR S_SEMICOLON statement {
+|TBoolean Var Semicolon {}
+|TCCPoint Var Semicolon {}
+|TInteger Var SquaLeft Decimals SquaRight Semicolon  {}
+|TInteger Var SquaLeft Var SquaRight Semicolon       {}
+|TFloat Var Semicolon {
 		PRINT("float %s defined", $2);
 		strcpy(gFields[gFieldCounter], $2);
 		gFieldTypes[gFieldCounter] = FT_Float;
 		++gFieldCounter;
 }
 
-|T_FLOAT VAR S_LSQ VAR S_RSQ S_SEMICOLON statement {}
-|T_FLOAT VAR S_LSQ DIGITALS S_RSQ S_SEMICOLON statement {}
-|S_RBRACKET			{}
+|TFloat Var SquaLeft Var SquaRight Semicolon      {}
+|TFloat Var SquaLeft Decimals SquaRight Semicolon {}
 ;
 %%
 
@@ -92,7 +96,7 @@ void yyerror(char *err)
 const char* getTypeStringRep(int type){
 	const char* rv = "";
 	switch(type){
-	case FT_String:
+	case FTString:
 		rv = "string";
 		break;
 	case FT_Integer:
