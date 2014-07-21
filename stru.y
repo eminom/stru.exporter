@@ -18,7 +18,7 @@ extern int yylineno;
 //FieldType 
 enum {
 	FT_Integer,		//some operand manipulated by APIs such as lua_pushinteger
-	FTString,			//lua_pushstring   string terminated by zero
+	FT_String,			//lua_pushstring   string terminated by zero
 	FT_Float				//lua_pushnumber (double)
 };
 
@@ -26,6 +26,10 @@ char gStructName[BUFSIZ];
 char gFields[_MAX_FIELDS][BUFSIZ];
 int gFieldTypes[_MAX_FIELDS];
 int gFieldCounter = 0;
+
+//Only !gIsArray && gAcceptedType do we move on
+int gIsArray = 0;
+int gAcceptedType = 0;
 
 void writeStructFile();
 
@@ -46,6 +50,7 @@ void writeStructFile();
 GeneralStatementsOpt:
 SingleGeneralStatement GeneralStatementsOpt
 |Semicolon
+| 
 ;
 
 SingleGeneralStatement:
@@ -54,7 +59,7 @@ Struct Semicolon
 ;
 
 Struct:
-TStruct Var Left StatementsOpt Right
+TStruct Var Left DefinesOpt Right
 		{
 			PRINT("struct %s defined", $2);
 			strcpy(gStructName, $2);
@@ -62,40 +67,32 @@ TStruct Var Left StatementsOpt Right
 		}
 ;
 
-StatementsOpt:
-SingleStatement StatementsOpt
+DefinesOpt:
+SingleDefine DefinesOpt
 |
 ;
 
-SingleStatement:
-TInteger Var Semicolon					
-	{
-		PRINT("int %s defined", $2);
-		strcpy(gFields[gFieldCounter], $2);
-		gFieldTypes[gFieldCounter] = FT_Integer;
-		++gFieldCounter;
-	}
-|TString Var Semicolon
-	{
-		PRINT("std::string %s defined", $2);
-		strcpy(gFields[gFieldCounter], $2);
-		gFieldTypes[gFieldCounter] = FTString;
-		++gFieldCounter;
-	}
-|TBoolean Var Semicolon {}
-|TCCPoint Var Semicolon {}
-|TInteger Var SquaLeft Decimals SquaRight Semicolon  {}
-|TInteger Var SquaLeft Var SquaRight Semicolon       {}
-|TFloat Var Semicolon {
-		PRINT("float %s defined", $2);
-		strcpy(gFields[gFieldCounter], $2);
-		gFieldTypes[gFieldCounter] = FT_Float;
-		++gFieldCounter;
-}
+TypeToken:
+TInteger			{   gFieldTypes[gFieldCounter] = FT_Integer;  gAcceptedType = 1;}
+|TString			{		gFieldTypes[gFieldCounter] = FT_String;   gAcceptedType = 1;}
+|TBoolean			{   gAcceptedType = 0; }
+|TFloat				{   gAcceptedType = 0; }
+|TCCPoint			{   gAcceptedType = 0; }
 
-|TFloat Var SquaLeft Var SquaRight Semicolon      {}
-|TFloat Var SquaLeft Decimals SquaRight Semicolon {}
+
+SingleDefine:
+TypeToken VarObj Semicolon		{ 
+	if(gAcceptedType && !gIsArray){
+		gFieldCounter++;
+	}
+};
+
+VarObj:
+Var																		{ strcpy(gFields[gFieldCounter], $1); gIsArray = 0;}
+| Var SquaLeft Decimals SquaRight 		{ gIsArray = 1; /*Just ignore array for now  */}
+| Var SquaLeft Var      SquaRight			{ gIsArray = 1; }
 ;
+
 %%
 
 void yyerror(char *err)
@@ -108,17 +105,11 @@ void yyerror(char *err)
 const char* getTypeStringRep(int type){
 	const char* rv = "";
 	switch(type){
-	case FTString:
-		rv = "string";
-		break;
-	case FT_Integer:
-		rv = "integer";
-		break;
-	case FT_Float:
-		rv = "float";
-		break;
+	case FT_String:		rv = "string";		break;
+	case FT_Integer:	rv = "integer";		break;
+	case FT_Float:		rv = "float"; 		break;
 	default:
-		printf("No no no, invalid type no.\n");
+	  printf("No no no, invalid type no.\n");
 		abort();
 		break;
 	}
