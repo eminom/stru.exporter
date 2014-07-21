@@ -22,7 +22,6 @@ enum {
 	FT_Float				//lua_pushnumber (double)
 };
 
-
 char gStructName[BUFSIZ];
 char gFields[_MAX_FIELDS][BUFSIZ];
 int gFieldTypes[_MAX_FIELDS];
@@ -41,13 +40,23 @@ int gFieldCounter;
 %token TFloat
 
 %%
-struct:
-TStruct Var Left StatementsOpt Right Semicolon  
+
+GeneralStatementsOpt:
+SingleGeneralStatement GeneralStatementsOpt
+|Semicolon
+;
+
+SingleGeneralStatement:
+Struct Semicolon
+|Semicolon
+;
+
+Struct:
+TStruct Var Left StatementsOpt Right
 		{
 			PRINT("struct %s defined", $2);
 			strcpy(gStructName, $2);
 		}
-|
 ;
 
 StatementsOpt:
