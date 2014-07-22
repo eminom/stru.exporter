@@ -1,4 +1,4 @@
-
+#! /usr/local/bin/node 
 
 //Authored by eminem
 //July.2o14
