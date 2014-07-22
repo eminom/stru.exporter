@@ -10,17 +10,27 @@ var fs = require('fs');
 var loadFromStream = require('./loader');	//
 var loadJsonObj = require('./jloader');
 
-function printFields(stru,conf){
+
+var dispatchHandler = {
+	integer: function(field, conf){
+		console.log(conf.GetterIntImpl + '(' + field + ')');
+	},
+	string: function(field, conf){
+		console.log(conf.GetterStringImpl + '(' + field + ')');
+	}
+};
+
+
+function typeDispatcher(type, field, conf){
+	if('function' == typeof(dispatchHandler[type])){
+		dispatchHandler[type](field, conf);
+	}
+}
+
+
+function printFields(stru, conf){
 	for(var i in stru){
-		if('integer' === stru[i]){
-			console.log(conf.GetterIntImpl + '(' + i+')');
-		} else if('string' === stru[i]){
-			console.log(conf.GetterStringImpl + '(' + i + ')');
-		} else if('float' === stru[i]){
-			//ignore
-		} else {
-			throw "Invalid type for " + stru[i];
-		}
+		typeDispatcher(stru[i], i, conf);
 	}
 }
 
@@ -63,6 +73,7 @@ function main(){
 	//var source = process.argv.splice(2)[0];
 	//var arch = loadJsonObj(source);
 	var arch = JSON.parse(loadFromStream());
+	arch = arch[''];
 
 	console.log('//');
 	console.log('//This code-snippet is generated automatically.');
@@ -70,8 +81,11 @@ function main(){
 	console.log('');
 	console.log('');
 	
-	printFields(arch.struct, conf);
-	printLibs(arch.struct, conf);
+	for(var i in arch){
+		var tobj = arch[i];
+ 		printFields(tobj, conf);
+		printLibs(tobj, conf);
+	}
 }
 
 //Startup
