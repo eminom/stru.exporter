@@ -4,12 +4,7 @@ all:
 	cc -std=c99 -o parser *.c
 
 test:
-	./parser < input2 > result
-	node enci.js result > code_snippet
-	@echo '' 
-	@echo ''
-	@echo ''
-	cat ./code_snippet
+	find . -name "sample*.in" | xargs -I{} perl test.pl {}
 
 clean:
 	rm -rf parser
