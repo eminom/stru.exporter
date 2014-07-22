@@ -95,18 +95,18 @@ void popStruChunk()
 	gChunk = chunk_now;
 }
 
-StruChunk* searchLatestChunkFromTop()
-{
-	StruChunk *top = gStack[gTop];
-	StruLink *link = top->subs;
-	StruChunk *rv = top;		//This is weird
-	while(link)
-	{
-		rv = link->chunk;
-		link = link->next;
-	}
-	return rv;
-}
+//StruChunk* searchLatestChunkFromTop()
+//{
+//	StruChunk *top = gStack[gTop];
+//	StruLink *link = top->subs;
+//	StruChunk *rv = top;		//This is weird
+//	while(link)
+//	{
+//		rv = link->chunk;
+//		link = link->next;
+//	}
+//	return rv;
+//}
 
 StruChunk* chunkTop()
 {
@@ -135,7 +135,7 @@ SingleGeneralStatement GeneralStatementsOpt
 ;
 
 SingleGeneralStatement:
-Struct Semicolon
+StructDefine Semicolon
 |Semicolon
 ;
 
@@ -150,8 +150,13 @@ TStruct {
 }
 ;
 
-Struct:
-KeyStruct StructName Left DefinesOpt Right
+StructTarget:
+Var   { strcpy(gChunk->structName, $1); /*The overriding of struct name*/}
+|     {}
+;
+
+StructDefine:
+KeyStruct StructName Left DefinesOpt Right StructTarget
 		{
 			popStruChunk();
 		}
@@ -171,11 +176,7 @@ TInteger			{   gChunk->fieldTypes[gChunk->fieldCounter] = FT_Integer;  gChunk->a
 
 
 SingleDefine:
-Struct Var Semicolon {
-	StruChunk *chunk = searchLatestChunkFromTop();
-	//PRINT("change from %s to %s\n", pChunk->structName, $2);
-	strcpy(chunk->structName, $2);
-}
+StructDefine Semicolon				{}
 |TypeToken VarObj Semicolon		{ 
 	if(gChunk->accepted && !gChunk->isArray){
 		gChunk->fieldCounter++;
