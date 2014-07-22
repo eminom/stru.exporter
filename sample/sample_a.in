@@ -1,0 +1,6 @@
+
+struct XStruct
+{
+	int iVal;
+	std::string strVal;
+};

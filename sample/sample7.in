@@ -1,0 +1,18 @@
+
+
+struct X
+{
+	int x_pre;
+	bool x_boolean;
+	struct Y{
+		int y1;
+		struct Z{
+			int z1;
+		}memZ;
+
+		bool y_boolean;
+		;
+	}memY;
+
+	int x_post;
+};

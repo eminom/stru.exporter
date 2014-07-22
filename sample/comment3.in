@@ -1,0 +1,8 @@
+
+struct SomeStruct2
+{
+	//This is some blank line
+	//
+	//This should be more complex//
+	int integerValue;
+};
