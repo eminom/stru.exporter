@@ -1,5 +1,0 @@
-struct X
-{
-	int a;
-	int y
-};
