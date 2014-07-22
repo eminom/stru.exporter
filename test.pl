@@ -7,6 +7,6 @@ if($#ARGV != 0){
 	exit;
 }
 
-my $cmd = "cat $ARGV[0] | ./parser";
+my $cmd = "cat $ARGV[0] | ./parser | ./enci.js";
 system($cmd);
 die "parsing error" if $?;
