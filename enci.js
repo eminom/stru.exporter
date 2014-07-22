@@ -85,6 +85,7 @@ function main(){
 		var tobj = arch[i];
  		printFields(tobj, conf);
 		printLibs(tobj, conf);
+		console.log('');
 	}
 }
 
