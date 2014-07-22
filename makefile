@@ -4,7 +4,7 @@ all:
 	cc -std=c99 -o parser *.c
 
 test:
-	find . -name "sample*.in" | xargs -I{} perl test.pl {}
+	find sample -name "sample*.in" | xargs -I{} ./test.pl {}
 
 clean:
 	rm -rf parser
