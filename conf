@@ -2,5 +2,6 @@
 "Entry":"_BattleEntry",
 "GetterIntImpl":"_BattleInt",
 "GetterStringImpl":"_BattleStr",
-"LibName":"battleConfigLib"
+"LibName":"battleConfigLib",
+"Comments":"something"
 }
